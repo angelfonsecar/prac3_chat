@@ -18,7 +18,7 @@ class Envia extends Thread{
             InetAddress gpo = InetAddress.getByName(dir);
 
             for(;;){
-                String mensaje= origen+":";
+                String mensaje= origen+": ";
                 System.out.println("Escribe un mensaje para ser enviado:");
                 mensaje += br.readLine();
                 byte[] b = mensaje.getBytes();
@@ -48,12 +48,12 @@ class Recibe extends Thread{
             } //for
         }catch(Exception e){
             e.printStackTrace();
-        }//catch
-    }//run
-}//class
+        }
+    }
+}
 
 
-public class Principal {
+public class Chat {
     public static void main(String[] args){
         try{
             int pto= 8000;
@@ -86,6 +86,12 @@ public class Principal {
             m.joinGroup(dirm, null);
             System.out.println("Socket unido al grupo "+dir);
 
+            String mensaje = "}"+nombre;
+
+            byte[] b = mensaje.getBytes();
+            DatagramPacket p = new DatagramPacket(b,b.length,gpo,pto);
+            m.send(p);
+
             Recibe r = new Recibe(m);
             Envia e = new Envia(m, br, nombre);
             e.setPriority(10);
@@ -94,5 +100,5 @@ public class Principal {
             r.join();
             e.join();
         }catch(Exception e){}
-    }//main  
+    }
 }
