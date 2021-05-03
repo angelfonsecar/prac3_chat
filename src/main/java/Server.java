@@ -4,38 +4,10 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
-class EnviaLista extends Thread{
-    MulticastSocket socket;
-    BufferedReader br;
-    String origen;
-    public EnviaLista(MulticastSocket m, BufferedReader br){
-        this.socket=m;
-        this.br=br;
-    }
-    public void run(){
-        try{
-            String dir= "230.0.0.8";
-            int pto=8000;
-            InetAddress gpo = InetAddress.getByName(dir);
-
-            for(;;){
-                String mensaje= origen+": ";
-                System.out.println("Escribe un mensaje para ser enviado:");
-                mensaje += br.readLine();
-                byte[] b = mensaje.getBytes();
-                DatagramPacket p = new DatagramPacket(b,b.length,gpo,pto);
-                socket.send(p);
-            }//for
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-    }
-}
-
 class RecibeNombre extends Thread{
     MulticastSocket socket;
-    ArrayList usuarios;
-    public RecibeNombre(MulticastSocket m, ArrayList usuarios){
+    ArrayList<String> usuarios;
+    public RecibeNombre(MulticastSocket m, ArrayList<String> usuarios){
         this.socket=m;
         this.usuarios=usuarios;
     }
@@ -48,13 +20,29 @@ class RecibeNombre extends Thread{
                 String msj = new String(p.getData(),0,p.getLength());
 
                 if(msj.charAt(0)=='}') {
+                    enviaListaUsuarios();   //enviar la lista actual
                     usuarios.add(msj.substring(1));
-                    //System.out.print(usuarios);
-                    for (int i =0; i<usuarios.size(); i++){
-                        System.out.println(usuarios.get(i));
-                    }
+                    System.out.println("\nUsuarios conectados: " + usuarios.toString());
                 }
             }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void enviaListaUsuarios(){
+        try {
+            String dir = "230.0.0.8";
+            int pto = 8000;
+            InetAddress gpo = InetAddress.getByName(dir);
+
+            //con el caracter especial \ se identifica que el mensaje es la lista de usuarios
+            String s = "\\" + usuarios.toString();
+            byte[] b = s.getBytes();
+            DatagramPacket p = new DatagramPacket(b,b.length,gpo,pto);
+            if (!usuarios.isEmpty())
+                socket.send(p);
+
         }catch(Exception e){
             e.printStackTrace();
         }
@@ -69,7 +57,7 @@ public class Server {
             int pto = 8000;
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.ISO_8859_1));
 
-            System.out.print("\nServer ejecutando");
+            System.out.println("\nServer iniciando");
 
             MulticastSocket m= new MulticastSocket(pto);
             m.setReuseAddress(true);
@@ -85,15 +73,11 @@ public class Server {
                 return;
             }
             m.joinGroup(dirm, null);
-            System.out.println("Socket unido al grupo "+dir);
+            System.out.println("Servidor corriendo en el grupo "+dir);
 
             RecibeNombre r = new RecibeNombre(m, usuarios);
-            EnviaLista e = new EnviaLista(m, br);
-            e.setPriority(10);
             r.start();
-            e.start();
             r.join();
-            e.join();
-        }catch(Exception e){}
+        }catch(Exception e){ e.printStackTrace();}
     }
 }

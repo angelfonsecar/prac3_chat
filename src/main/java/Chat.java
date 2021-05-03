@@ -19,7 +19,7 @@ class Envia extends Thread{
 
             for(;;){
                 String mensaje= origen+": ";
-                System.out.println("Escribe un mensaje para ser enviado:");
+                //System.out.print(">\n");
                 mensaje += br.readLine();
                 byte[] b = mensaje.getBytes();
                 DatagramPacket p = new DatagramPacket(b,b.length,gpo,pto);
@@ -32,6 +32,10 @@ class Envia extends Thread{
 }
 
 class Recibe extends Thread{
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_PURPLE = "\u001B[35m";
+
+    boolean listaRecibida = false;
     MulticastSocket socket;
     public Recibe(MulticastSocket m){
         this.socket=m;
@@ -59,7 +63,7 @@ public class Chat {
             int pto= 8000;
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.ISO_8859_1));
 
-            System.out.print("\nElige el nombre que usaras en el chat:"); //nombremos
+            System.out.print("\nNombre:");
             String nombre = null;
             try{
                 BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
@@ -86,6 +90,7 @@ public class Chat {
             m.joinGroup(dirm, null);
             System.out.println("Socket unido al grupo "+dir);
 
+            //con el caracter especial } se identifica que el mensaje es el nombre de un nuevo usuario
             String mensaje = "}"+nombre;
 
             byte[] b = mensaje.getBytes();
@@ -99,6 +104,8 @@ public class Chat {
             e.start();
             r.join();
             e.join();
-        }catch(Exception e){}
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 }
