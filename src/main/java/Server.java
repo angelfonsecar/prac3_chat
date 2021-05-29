@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.net.*;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 class RecibeNombre extends Thread{
@@ -55,7 +52,6 @@ public class Server {
 
         try{
             int pto = 8000;
-            BufferedReader br = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.ISO_8859_1));
 
             System.out.println("\nServer iniciando");
 
